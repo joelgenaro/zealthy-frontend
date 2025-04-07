@@ -19,15 +19,23 @@ function Onboarding() {
   useEffect(() => {
     const savedStep = localStorage.getItem("onboardingStep");
     const savedFormData = localStorage.getItem("onboardingFormData");
+    const savedConfig = localStorage.getItem("onboardingConfig");
 
     if (savedStep && savedFormData) {
       setStep(Number(savedStep));
       setFormData(JSON.parse(savedFormData));
     }
 
-    get("/admin-config")
-      .then((res) => setConfig(res.data))
-      .catch((err) => console.error("Error fetching config:", err));
+    if (savedConfig) {
+      setConfig(JSON.parse(savedConfig));
+    } else {
+      get("/admin-config")
+        .then((res) => {
+          setConfig(res.data);
+          localStorage.setItem("onboardingConfig", JSON.stringify(res.data));
+        })
+        .catch((err) => console.error("Error fetching config:", err));
+    }
   }, []);
 
   useEffect(() => {
@@ -64,6 +72,7 @@ function Onboarding() {
           alert("Submitted!");
           localStorage.removeItem("onboardingStep");
           localStorage.removeItem("onboardingFormData");
+          localStorage.removeItem("onboardingConfig");
         })
         .catch((err) => console.error("Error submitting data:", err));
     }
